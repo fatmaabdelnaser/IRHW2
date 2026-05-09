@@ -264,6 +264,8 @@ public class InvertedIndex {
         Map<Integer, Double> scores = CosineSimilarity.computeAllScores(queryVector, allDocVectors);
 
         // 6. Sorting
+        List<Map.Entry<Integer, Double>> topK = Ranking.getTopK(scores, 10);
+        Ranking.displayResults(topK);
 
 
         // Print a sample of the index (first 30 terms, alphabetical)
