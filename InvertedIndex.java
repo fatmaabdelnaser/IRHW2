@@ -120,7 +120,7 @@ public class InvertedIndex {
         return tf;
     }
 
-    // Public getters (used by later classes: TF-IDF, CosineSimilarity)
+    // Public getters (used by later classes: TF-IDF, invertedIndex.CosineSimilarity)
 
     /** @return the full inverted index (term → { docId → TF }) */
     public Map<String, Map<Integer, Integer>> getInvertedIndex() {
@@ -221,7 +221,29 @@ public class InvertedIndex {
             "out","per","yet","two","use","used","using","known","made"
     ));
 
-    // main – standalone demo (crawls + builds index + prints sample)
+
+    public Map<Integer, Map<String, Double>> getDocumentVectors() {
+        Map<Integer, Map<String, Double>> docVectors = new HashMap<>();
+
+        int N = totalDocs;
+
+        for (String term : invertedIndex.keySet()) {
+            Map<Integer, Integer> postings = invertedIndex.get(term);
+            int df = postings.size();
+            double idf = Math.log((double) N / df);
+
+            for (Map.Entry<Integer, Integer> entry : postings.entrySet()) {
+                int docId = entry.getKey();
+                int tf = entry.getValue();
+
+                docVectors.computeIfAbsent(docId, k -> new HashMap<>())
+                        .put(term, tf * idf);
+            }
+        }
+        return docVectors;
+    }
+
+    // main – standalone demo (crawls + builds index + cosine similarity + prints sample)
     public static void main(String[] args) {
         // 1. Crawl
         WebCrawler crawler = new WebCrawler();
@@ -231,10 +253,23 @@ public class InvertedIndex {
         InvertedIndex index = new InvertedIndex(crawler.getPages());
         index.build();
 
-        // 3. Print a sample of the index (first 30 terms, alphabetical)
+        // 3. Document Vectors: Generate TF-IDF numerical vectors for all indexed pages
+        Map<Integer, Map<String, Double>> allDocVectors = index.getDocumentVectors();
+
+        // 4. Query Processing: Get user input and convert it to a TF-IDF query vector
+        QueryProcessor qp = new QueryProcessor(index);
+        Map<String, Double> queryVector = qp.getUserQueryVector();
+
+        // 5. Scoring: Calculate Cosine Similarity between the query and all documents
+        Map<Integer, Double> scores = CosineSimilarity.computeAllScores(queryVector, allDocVectors);
+
+        // 6. Sorting
+
+
+        // Print a sample of the index (first 30 terms, alphabetical)
         index.printIndex(30);
 
-        // 4. Print top-10 terms by TF for each crawled document
+        // Print top-10 terms by TF for each crawled document
         System.out.println("=== Top-10 terms per document ===\n");
         for (WebCrawler.CrawledPage page : crawler.getPages()) {
             index.printDocumentTF(page.docId, 10);
