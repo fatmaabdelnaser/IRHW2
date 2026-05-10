@@ -263,10 +263,6 @@ public class InvertedIndex {
         // 5. Scoring: Calculate Cosine Similarity between the query and all documents
         Map<Integer, Double> scores = CosineSimilarity.computeAllScores(queryVector, allDocVectors);
 
-        // 6. Sorting
-        List<Map.Entry<Integer, Double>> topK = Ranking.getTopK(scores, 10);
-        Ranking.displayResults(topK);
-
 
         // Print a sample of the index (first 30 terms, alphabetical)
         index.printIndex(30);
@@ -276,5 +272,9 @@ public class InvertedIndex {
         for (WebCrawler.CrawledPage page : crawler.getPages()) {
             index.printDocumentTF(page.docId, 10);
         }
+
+        // 6. Sorting
+        List<Map.Entry<Integer, Double>> topK = Ranking.getTopK(scores, 10);
+        Ranking.displayResults(topK);
     }
 }
