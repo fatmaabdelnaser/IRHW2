@@ -1,3 +1,4 @@
+package invertedIndex;
 import java.util.*;
 
 public class CosineSimilarity {
